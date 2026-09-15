@@ -1,0 +1,51 @@
+substitutions:
+  _REGION: asia-northeast3
+  _AR_REPOSITORY: s0uyyn
+  _SERVICE_NAME: s0uyyn-home-api
+  _CLOUD_SQL_INSTANCE: your-project:asia-northeast3:s0uyyn-postgres
+  _PGDATABASE: s0uyyn_home
+  _PGUSER: s0uyyn_app
+  _PGPASSWORD_SECRET: s0uyyn-db-password
+  _PGPASSWORD_SECRET_VERSION: '1'
+  _JWT_SECRET: s0uyyn-jwt-secret
+  _JWT_SECRET_VERSION: '1'
+  _ADMIN_EMAIL: admin@example.com
+  _ADMIN_PASSWORD_SECRET: s0uyyn-admin-password
+  _ADMIN_PASSWORD_SECRET_VERSION: '1'
+  _CORS_ORIGINS: https://dashboard.example.com,https://www.example.com
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPOSITORY}/${_SERVICE_NAME}:${BUILD_ID}
+      - .
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPOSITORY}/${_SERVICE_NAME}:${BUILD_ID}
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE_NAME}
+      - --image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPOSITORY}/${_SERVICE_NAME}:${BUILD_ID}
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --add-cloudsql-instances=${_CLOUD_SQL_INSTANCE}
+      - --set-env-vars=^@^NODE_ENV=production@PGHOST=/cloudsql/${_CLOUD_SQL_INSTANCE}@PGDATABASE=${_PGDATABASE}@PGUSER=${_PGUSER}@CORS_ORIGINS=${_CORS_ORIGINS}@ADMIN_EMAIL=${_ADMIN_EMAIL}
+      - --set-secrets=PGPASSWORD=${_PGPASSWORD_SECRET}:${_PGPASSWORD_SECRET_VERSION},JWT_SECRET=${_JWT_SECRET}:${_JWT_SECRET_VERSION},ADMIN_PASSWORD=${_ADMIN_PASSWORD_SECRET}:${_ADMIN_PASSWORD_SECRET_VERSION}
+      - --min-instances=0
+      - --max-instances=10
+      - --concurrency=40
+      - --cpu=1
+      - --memory=512Mi
+
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPOSITORY}/${_SERVICE_NAME}:${BUILD_ID}
+
+options:
+  logging: CLOUD_LOGGING_ONLY
