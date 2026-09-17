@@ -59,7 +59,7 @@ export async function buildApp({ database, logger = config.nodeEnv !== "test" })
     return reply.code(500).send({ error: { code: "INTERNAL_ERROR", message: "An unexpected error occurred." } });
   });
 
-  app.get("/healthz", async () => ({ status: "ok" }));
+  app.get("/health", async () => ({ status: "ok" }));
   app.get("/readyz", async (_request, reply) => {
     try {
       await database.query("SELECT 1");
