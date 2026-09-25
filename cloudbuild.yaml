@@ -12,7 +12,7 @@ substitutions:
   _ADMIN_EMAIL: admin@example.com
   _ADMIN_PASSWORD_SECRET: s0uyyn-admin-password
   _ADMIN_PASSWORD_SECRET_VERSION: '1'
-  _CORS_ORIGINS: https://dashboard.example.com,https://www.example.com
+  _CORS_ORIGINS: https://s0uyyn-home.yunko20090802.workers.dev,https://s0uyyn.com
 
 steps:
   - name: gcr.io/cloud-builders/docker

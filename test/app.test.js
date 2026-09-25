@@ -25,7 +25,7 @@ function fakeDatabase() {
 
 test("health and public content routes respond", async () => {
   const app = await buildApp({ database: fakeDatabase(), logger: false });
-  const health = await app.inject({ method: "GET", url: "/healthz" });
+  const health = await app.inject({ method: "GET", url: "/health" });
   assert.equal(health.statusCode, 200);
   assert.deepEqual(health.json(), { status: "ok" });
 

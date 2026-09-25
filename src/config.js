@@ -19,6 +19,14 @@ function booleanFromEnv(name, fallback = false) {
 
 const nodeEnv = process.env.NODE_ENV ?? "development";
 const jwtSecret = process.env.JWT_SECRET ?? "development-only-secret-change-me-now";
+const requiredCorsOrigins = [
+  "https://s0uyyn-home.yunko20090802.workers.dev",
+  "https://s0uyyn.com"
+];
+const configuredCorsOrigins = (process.env.CORS_ORIGINS ?? "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim().replace(/\/$/, ""))
+  .filter(Boolean);
 
 if (nodeEnv === "production" && jwtSecret.length < 32) {
   throw new Error("JWT_SECRET must contain at least 32 characters in production.");
@@ -35,10 +43,7 @@ export const config = Object.freeze({
   jwtSecret,
   jwtIssuer: process.env.JWT_ISSUER ?? "s0uyyn-home-api",
   jwtTtlSeconds: numberFromEnv("JWT_TTL_SECONDS", 28_800, { min: 300, max: 86_400 }),
-  corsOrigins: (process.env.CORS_ORIGINS ?? "http://localhost:5173")
-    .split(",")
-    .map((origin) => origin.trim().replace(/\/$/, ""))
-    .filter(Boolean),
+  corsOrigins: [...new Set([...requiredCorsOrigins, ...configuredCorsOrigins])],
   adminEmail: process.env.ADMIN_EMAIL?.trim().toLowerCase(),
   adminPassword: process.env.ADMIN_PASSWORD
 });
